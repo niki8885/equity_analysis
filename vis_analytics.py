@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import os
+
+DATA_DIR = "data"
 
 def moving_average(data, period=50):
     """Calculates the moving average (MA) for the given period."""
@@ -10,7 +13,7 @@ def average_true_range(data, period=14):
     high_low = data['High'] - data['Low']
     high_close = np.abs(data['High'] - data['Close'].shift())
     low_close = np.abs(data['Low'] - data['Close'].shift())
-    true_range = np.maximum.reduce([high_low, high_close, low_close])
+    true_range = pd.Series(np.maximum.reduce([high_low, high_close, low_close]), index=data.index)
     return true_range.rolling(window=period).mean()
 
 def relative_strength_index(data, period=14):
@@ -57,3 +60,22 @@ def alpha_beta(asset_returns, market_returns):
 def pe_ratio(stock_price, earnings_per_share):
     """Calculates the Price-to-Earnings (P/E) ratio."""
     return stock_price / earnings_per_share
+
+def add_to_csv():
+    for file in os.listdir(DATA_DIR):
+        if file.endswith(".csv"):
+            file_path = os.path.join(DATA_DIR, file)
+
+            df = pd.read_csv(file_path, parse_dates=['Date'])
+
+            df['MA_50'] = moving_average(df, 50)
+            df['ATR_14'] = average_true_range(df, 14)
+            df['RSI_14'] = relative_strength_index(df, 14)
+            df['EMA_12'] = exponential_moving_average(df, 12)
+            df['EMA_26'] = exponential_moving_average(df, 26)
+            df['MACD'], df['Signal_Line'] = macd(df)
+            df['Upper_Band'], df['Lower_Band'] = bollinger_bands(df, 20, 2)
+            df['Sharpe_Ratio'] = sharpe_ratio(df)
+
+            df.to_csv(file_path, index=False)
+            print(f"Analytics added: {file}")
