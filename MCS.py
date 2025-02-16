@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as stats
+import os
 
+save_dir = "./plots"
+os.makedirs(save_dir, exist_ok=True)
 
 def prediction_mcs(data, days=30, simulations=1000):
     """
@@ -73,8 +76,10 @@ def conf_intervals(forecast):
     plt.ylabel("Price")
     plt.legend()
     plt.grid(True)
-    plt.show()
-
+    save_path = os.path.join(save_dir, f"Monte_Carlo_Price.png")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    print(f"Chart saved: {save_path}")
+    print(f"Chart saved: {save_path}")
     # Display forecasted values for the last day
     median_price = median_forecast[-1]
     lower_bound = percentile_5[-1]
@@ -137,8 +142,9 @@ def probability_distribution(forecast, current_price):
     plt.ylabel("Probability (%)")
     plt.title("Probability of Reaching Target Prices")
     plt.grid(True)
-    plt.show()
-
+    save_path = os.path.join(save_dir, f"Probability_of_Reaching_Target.png")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    print(f"Chart saved: {save_path}")
     return probability_df
 
 
@@ -251,6 +257,7 @@ def stress_test_mcs(forecast, sigma, stress_factor=1.5, max_price_multiplier=3, 
     plt.ylabel("Price")
     plt.legend()
     plt.grid(True)
-    plt.show()
-
+    save_path = os.path.join(save_dir, f"Stress_Test_Monte_Carlo_Price.png")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    print(f"Chart saved: {save_path}")
     return stressed_forecast

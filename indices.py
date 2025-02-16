@@ -2,7 +2,10 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
 
+save_dir = "./plots"
+os.makedirs(save_dir, exist_ok=True)
 data = pd.read_csv("./data/merged_indices.csv")
 
 def prepare_indices(ticker):
@@ -92,8 +95,9 @@ def indices_corr(data, method, ticker_name):
     plt.figure(figsize=(10, 8))
     sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5)
     plt.title(f"{method.capitalize()} Correlation Matrix of {ticker_name}\nBest correlated: {best_corr_str}")
-    plt.show()
-
+    save_path = os.path.join(save_dir, f"Correlation_Matrix_of_{ticker_name}_method_{method}.png")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    print(f"Chart saved: {save_path}")
     # Plot line chart for best correlated indices
     plt.figure(figsize=(12, 6))
     for idx in best_corr_indices.index:
@@ -103,8 +107,9 @@ def indices_corr(data, method, ticker_name):
     plt.title(f"Price Trends of {ticker_name} and Top Correlated Indices")
     plt.xlabel("Date")
     plt.ylabel("Price")
-    plt.show()
-
+    save_path = os.path.join(save_dir, f"Price_Trends_of_{ticker_name}_and_Top_Correlated_Indices_method_{method}.png")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+    print(f"Chart saved: {save_path}")
     return corr_matrix
 
 # TODO: Implement function for optimize and choose best normalization method

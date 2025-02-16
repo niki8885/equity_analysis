@@ -2,13 +2,15 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import pandas as pd
 import re
+import os
 
 
 def get_date(days_ago):
     """Returns a date string (YYYY-MM-DD) for the given number of days ago."""
     return (datetime.today() - timedelta(days=days_ago)).strftime('%Y-%m-%d')
 
-
+save_dir = "./financial_data"
+os.makedirs(save_dir, exist_ok=True)
 today = get_date(0)
 
 
@@ -35,6 +37,30 @@ def basic_analysis(ticker):
         "quarterly_income": ticker.quarterly_income_stmt
     }
 
+def save_analysis_to_csv(ticker_symbol):
+    """Fetches fundamental data and saves each section to a CSV file."""
+    data = basic_analysis(ticker_symbol)
+
+    for key, value in data.items():
+        file_path = os.path.join(save_dir, f"{ticker_symbol}_{key}.csv")
+
+        if isinstance(value, pd.DataFrame):
+            # Save DataFrame directly
+            value.to_csv(file_path)
+        elif isinstance(value, dict):
+            # Convert dictionary to DataFrame
+            df = pd.DataFrame([value])
+            df.to_csv(file_path, index=False)
+        elif isinstance(value, pd.Series):
+            # Convert Series to DataFrame
+            df = value.to_frame()
+            df.to_csv(file_path)
+        else:
+            # Save single value (like ISIN) as a small CSV
+            df = pd.DataFrame({key: [value]})
+            df.to_csv(file_path, index=False)
+
+        print(f"Saved {key} to {file_path}")
 
 def request_data(ticker, interval, start_days, end_days=0, save=False, filename=None):
     """

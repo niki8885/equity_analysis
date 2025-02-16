@@ -3,18 +3,26 @@ import vis_analytics
 import mplfinance as mpf
 import pandas as pd
 import matplotlib.dates as mdates
+import os
 
+save_dir = "./plots"
+os.makedirs(save_dir, exist_ok=True)
 
 def candlestick_chart(data, title="Candlestick Chart"):
-    """Displays a candlestick chart with correct date formatting."""
+    """Displays a candlestick chart and saves it to a file."""
     if data is not None and not data.empty:
-        # Ensure the Date column is in datetime format and set as index
+        # Ensure the 'Date' column is in datetime format and set as index
         if 'Date' in data.columns:
             data['Date'] = pd.to_datetime(data['Date'])
             data.set_index('Date', inplace=True)
 
-        # Plot the candlestick chart
-        mpf.plot(data, type='candle', style='charles', title=title, volume=True)
+        # Define the save path
+        save_path = os.path.join(save_dir, f"{title}.png")
+
+        # Plot and save the candlestick chart
+        mpf.plot(data, type='candle', style='charles', title=title, volume=True, savefig=save_path)
+
+        print(f"Chart saved: {save_path}")
     else:
         print("Not enough data to display the chart.")
 
@@ -40,7 +48,9 @@ def lineplot_chart(data, title="Line Chart"):
         plt.title(title)
         plt.legend()
         plt.grid(True)
-        plt.show()
+        save_path = os.path.join(save_dir, f"{title}.png")
+        plt.savefig(save_path, dpi=600, bbox_inches='tight')
+        print(f"Chart saved: {save_path}")
     else:
         print("Not enough data to display the chart.")
 

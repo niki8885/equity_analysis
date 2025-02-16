@@ -96,15 +96,18 @@ indices.indices_corr(indices_df, "kendall", ticker)
 ```
 📦 equity_analysis
 ├── data/             # Directory for storing CSV files
+├── financial_data/   # Directory for storing fundamental financial data
+├── plots/            # Directory for saving generated charts
 ├── data_request.py   # Fetches stock data and fundamental analysis
+├── indices.py        # Index correlation analysis and normalization
 ├── vis_analytics.py  # Implements technical analysis indicators
 ├── charts.py         # Generates candlestick and line charts
-├── MCS.py            # Monte Carlo simulation for stock price prediction
 ├── analytics.py      # Computes historical volatility and risk analysis
-├── indices.py        # Index correlation analysis and normalization
+├── MCS.py            # Monte Carlo simulation for stock price prediction
+├── utils.py          # Handles data, charts, and report cleanup
 ├── main.py           # Main script executing the entire analysis pipeline
 ├── requirements.txt  # Dependencies list
-└── LICENSE.MD        # Documentation
+└── LICENSE.MD        # License documentation
 ```
 
 ## License
