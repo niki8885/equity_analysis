@@ -1,8 +1,9 @@
-import data_request, charts, vis_analytics, analytics, MCS
+import data_request, charts, vis_analytics, analytics, MCS, indices
 
 ticker = 'MS'
 
 basic_info = data_request.basic_analysis(ticker)
+print(basic_info)
 data_15m,data_1h,data_1d,data_1w,data_1m = data_request.request_all_data(ticker)
 
 vis_analytics.add_to_csv()
@@ -27,3 +28,9 @@ stress_factor = 1.5  # Increase volatility by 50%
 max_price_multiplier = 3  # Limit price growth to 3x the initial price
 stressed_forecast_log = MCS.stress_test_mcs(forecast, historical_volatility, stress_factor, max_price_multiplier, use_log_normal=True)
 stressed_forecast_norm = MCS.stress_test_mcs(forecast, historical_volatility, stress_factor, max_price_multiplier, use_log_normal=False)
+
+data_request.request_indices()
+indices_df = indices.prepare_indices(ticker)
+indices.indices_corr(indices_df,"pearson",ticker)
+indices.indices_corr(indices_df,"spearman",ticker)
+indices.indices_corr(indices_df,"kendall",ticker)

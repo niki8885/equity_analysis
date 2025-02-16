@@ -58,5 +58,4 @@ def generate_charts(data_15m, data_1h, data_1d, data_1w, data_1m, ticker_name):
         lineplot_chart(data, ticker_name + timeframes[i] + chart_types[1])
 
 
-# TODO: Add variability options for chart titles and grids
 # TODO: Implement function selection for different types of visualizations

@@ -61,9 +61,12 @@ def pe_ratio(stock_price, earnings_per_share):
     """Calculates the Price-to-Earnings (P/E) ratio."""
     return stock_price / earnings_per_share
 
+
 def add_to_csv():
+    allowed_files = {"data_1d.csv", "data_1h.csv", "data_1m.csv", "data_1w.csv", "data_15m.csv"}
+
     for file in os.listdir(DATA_DIR):
-        if file.endswith(".csv"):
+        if file in allowed_files:
             file_path = os.path.join(DATA_DIR, file)
 
             df = pd.read_csv(file_path, parse_dates=['Date'])

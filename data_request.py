@@ -97,3 +97,48 @@ def request_all_data(ticker):
 
     return data_15m, data_1h, data_1d, data_1w, data_1m
 
+
+def request_indices():
+    """Fetches historical stock prices for major indices and saves them as CSV files."""
+    indices = {
+        "^GSPC": "SP500.csv",  # S&P 500
+        "^IXIC": "NASDAQ.csv",  # NASDAQ Composite
+        "^DJI": "DowJones.csv",  # Dow Jones Industrial Average
+        "^RUT": "Russell2000.csv",  # Russell 2000
+        "^GDAXI": "DAX.csv",  # Germany DAX
+        "^FTSE": "FTSE100.csv",  # FTSE 100 (UK)
+        "^FCHI": "CAC40.csv",  # France CAC 40
+        "^HSI": "HangSeng.csv",  # Hong Kong Hang Seng
+        "^N225": "Nikkei225.csv",  # Japan Nikkei 225
+        "^BSESN": "BSE_Sensex.csv",  # India BSE Sensex
+        "^BVSP": "Bovespa.csv",  # Brazil Bovespa
+    }
+
+    all_data = []
+
+    for ticker, filename in indices.items():
+        print(f"Fetching data for {ticker}...")
+        data = request_data(ticker, "1d", start_days=180, save=True, filename=filename)
+        if data is not None:
+            data = data[['Date', 'Close']]
+            data.rename(columns={'Close': ticker}, inplace=True)
+            all_data.append(data)
+
+    # Merge all index data on the Date column
+    if all_data:
+        merged_df = all_data[0]
+        for df in all_data[1:]:
+            merged_df = pd.merge(merged_df, df, on='Date', how='inner')
+
+        # Load data_1d.csv and merge
+        data_1d = pd.read_csv("./data/data_1d.csv", parse_dates=["Date"])
+        data_1d = data_1d[['Date', 'Close']]
+        data_1d.rename(columns={'Close': 'data_1d'}, inplace=True)
+        merged_df = pd.merge(merged_df, data_1d, on='Date', how='inner')
+
+        # Save the merged dataframe
+        merged_df.to_csv("./data/merged_indices.csv", index=False)
+
+    print("All index data has been fetched, merged, and saved.")
+
+
