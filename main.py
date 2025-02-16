@@ -6,18 +6,18 @@ basic_info = data_request.basic_analysis(ticker)
 data_15m,data_1h,data_1d,data_1w,data_1m = data_request.request_all_data(ticker)
 
 vis_analytics.add_to_csv()
-charts.generate_charts(data_15m,data_1h,data_1d,data_1w,data_1m)
+charts.generate_charts(data_15m,data_1h,data_1d,data_1w,data_1m,ticker)
 
 forecast = MCS.prediction_mcs(data_1d)
 median_price, lower_bound, upper_bound = MCS.conf_intervals(forecast)
-prob = MCS.probability_of_target(forecast,595)
+prob = MCS.probability_of_target(forecast,150)
 print(f'Probability of target = {prob} %')
 
 last_price = data_1h["Close"].dropna().iloc[-1]
 probability_df = MCS.probability_distribution(forecast,last_price)
 
-take_profit = 585
-stop_loss = 550
+take_profit = last_price * 1.2
+stop_loss = last_price * 0.8
 risk_reward_result = MCS.risk_reward_analysis(forecast, last_price, take_profit, stop_loss)
 
 print(risk_reward_result)

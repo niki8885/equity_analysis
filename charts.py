@@ -18,7 +18,7 @@ def candlestick_chart(data, title="Candlestick Chart"):
     else:
         print("Not enough data to display the chart.")
 
-def lineplot_chart(data, title="Line Chart", analytics='MA', period=50):
+def lineplot_chart(data, title="Line Chart"):
     """Displays a line chart of closing prices with an additional analytic."""
     if data is not None and not data.empty:
         # Ensure the Date column is in datetime format and set as index
@@ -39,28 +39,23 @@ def lineplot_chart(data, title="Line Chart", analytics='MA', period=50):
         plt.ylabel("Price")
         plt.title(title)
         plt.legend()
-        plt.grid()
+        plt.grid(True)
         plt.show()
     else:
         print("Not enough data to display the chart.")
 
 
-def generate_charts(data_15m, data_1h, data_1d, data_1w, data_1m):
+def generate_charts(data_15m, data_1h, data_1d, data_1w, data_1m, ticker_name):
     """Generates candlestick and line charts for different time intervals."""
-    candlestick_chart(data_15m, "15-Minute Candlestick Chart")
-    lineplot_chart(data_15m, "15-Minute Line Chart")
+    timeframes = (" 15-Minute", " Hourly", " Daily", " Weekly", " Monthly")
+    chart_types = (" Candlestick Chart", " Line Chart")
 
-    candlestick_chart(data_1h, "Hourly Candlestick Chart")
-    lineplot_chart(data_1h, "Hourly Line Chart")
+    # Generate charts for all timeframes
+    datasets = [data_15m, data_1h, data_1d, data_1w, data_1m]
 
-    candlestick_chart(data_1d, "Daily Candlestick Chart")
-    lineplot_chart(data_1d, "Daily Line Chart")
-
-    candlestick_chart(data_1w, "Weekly Candlestick Chart")
-    lineplot_chart(data_1w, "Weekly Line Chart")
-
-    candlestick_chart(data_1m, "Monthly Candlestick Chart")
-    lineplot_chart(data_1m, "Monthly Line Chart")
+    for i, data in enumerate(datasets):
+        candlestick_chart(data, ticker_name + timeframes[i] + chart_types[0])
+        lineplot_chart(data, ticker_name + timeframes[i] + chart_types[1])
 
 
 # TODO: Add variability options for chart titles and grids
