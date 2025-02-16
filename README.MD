@@ -10,6 +10,8 @@ Equity Analysis is a Python-based project for fetching, analyzing, and visualizi
 - **Monte Carlo Simulations:** Performs Monte Carlo-based stock price forecasting and risk analysis.
 - **Risk/Reward Analysis:** Evaluates probability distributions for different price targets and computes risk/reward ratios.
 - **Visualization:** Generates candlestick and line charts using `mplfinance` and `matplotlib`.
+- **Index Correlation Analysis:** Computes and visualizes correlation between stock prices and global indices.
+- **Data Normalization:** Supports Min-Max Scaling, Z-score normalization, and percentage change transformations.
 
 ## Installation
 
@@ -28,58 +30,65 @@ The project uses the following Python libraries:
 - `matplotlib`
 - `mplfinance`
 - `scipy`
+- `seaborn`
+- `sklearn`
 
 ## Usage
 
-### Fetching Data
-```python
-import data_request
+The entire analysis workflow can be executed using `main.py`. This script fetches stock and index data, applies technical and fundamental analysis, runs Monte Carlo simulations, generates charts, and performs risk/reward assessments.
 
+### Running the Main Script
+```sh
+python main.py
+```
+
+### Functionality in `main.py`
+```python
+import data_request, charts, vis_analytics, analytics, MCS, indices
+
+# Define stock ticker
 ticker = 'MS'
-data = data_request.request_data(ticker, "1d", start_days=30, save=True, filename="data_1d.csv")
-```
 
-### Performing Basic Analysis
-```python
+# Fetch fundamental data
 basic_info = data_request.basic_analysis(ticker)
-print(basic_info["info"])  # Prints fundamental information about the stock
-```
+print(basic_info)
 
-### Applying Technical Indicators
-```python
-import vis_analytics
+# Retrieve historical stock data
+data_15m, data_1h, data_1d, data_1w, data_1m = data_request.request_all_data(ticker)
 
-rsi = vis_analytics.relative_strength_index(data)
-macd_line, signal_line = vis_analytics.macd(data)
-```
+# Perform technical analysis
+vis_analytics.add_to_csv()
+charts.generate_charts(data_15m, data_1h, data_1d, data_1w, data_1m, ticker)
 
-### Generating Charts
-```python
-import charts
+# Monte Carlo Simulation
+forecast = MCS.prediction_mcs(data_1d)
+median_price, lower_bound, upper_bound = MCS.conf_intervals(forecast)
+prob = MCS.probability_of_target(forecast, 150)
+print(f'Probability of target = {prob} %')
 
-charts.candlestick_chart(data, "Daily Candlestick Chart")
-charts.lineplot_chart(data, "Daily Line Chart")
-```
+# Risk and Probability Analysis
+last_price = data_1h["Close"].dropna().iloc[-1]
+probability_df = MCS.probability_distribution(forecast, last_price)
 
-### Running Monte Carlo Simulations
-```python
-import MCS
+take_profit = last_price * 1.2
+stop_loss = last_price * 0.8
+risk_reward_result = MCS.risk_reward_analysis(forecast, last_price, take_profit, stop_loss)
+print(risk_reward_result)
 
-forecast = MCS.prediction_mcs(data, days=30, simulations=1000)
-MCS.conf_intervals(forecast)
-```
+# Volatility Analysis
+historical_volatility = analytics.calculate_historical_volatility(data_1d)
+stress_factor = 1.5  # Increase volatility by 50%
+max_price_multiplier = 3  # Limit price growth to 3x the initial price
 
-### Risk and Probability Analysis
-```python
-current_price = data['Close'].iloc[-1]
-probability_distribution = MCS.probability_distribution(forecast, current_price)
-```
+stressed_forecast_log = MCS.stress_test_mcs(forecast, historical_volatility, stress_factor, max_price_multiplier, use_log_normal=True)
+stressed_forecast_norm = MCS.stress_test_mcs(forecast, historical_volatility, stress_factor, max_price_multiplier, use_log_normal=False)
 
-### Volatility Analysis
-```python
-import analytics
-
-historical_volatility = analytics.calculate_historical_volatility(data)
+# Index Correlation Analysis
+data_request.request_indices()
+indices_df = indices.prepare_indices(ticker)
+indices.indices_corr(indices_df, "pearson", ticker)
+indices.indices_corr(indices_df, "spearman", ticker)
+indices.indices_corr(indices_df, "kendall", ticker)
 ```
 
 ## Project Structure
@@ -92,19 +101,18 @@ historical_volatility = analytics.calculate_historical_volatility(data)
 ├── charts.py         # Generates candlestick and line charts
 ├── MCS.py            # Monte Carlo simulation for stock price prediction
 ├── analytics.py      # Computes historical volatility and risk analysis
-├── main.py           # Example script for running the analysis
+├── indices.py        # Index correlation analysis and normalization
+├── main.py           # Main script executing the entire analysis pipeline
 ├── requirements.txt  # Dependencies list
-└── README.md         # Documentation
+└── LICENSE.MD        # Documentation
 ```
 
 ## License
-This project is open-source and available under the MIT License.
+This project is open-source and available under the GNU General Public License (GPL-3.0).
 
 ## Contributions
 Contributions are welcome! Feel free to submit issues or pull requests to improve the project.
 
 ## Author
 **Nikita Manaenkov**
-
-
 
