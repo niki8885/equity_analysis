@@ -1,12 +1,11 @@
 import matplotlib.pyplot as plt
-import vis_analytics
 import mplfinance as mpf
 import pandas as pd
 import matplotlib.dates as mdates
 import os
 
-save_dir = "./plots"
-os.makedirs(save_dir, exist_ok=True)
+save_dir = "../data/plots"
+
 
 def candlestick_chart(data, title="Candlestick Chart"):
     """Displays a candlestick chart and saves it to a file."""
@@ -25,6 +24,7 @@ def candlestick_chart(data, title="Candlestick Chart"):
         print(f"Chart saved: {save_path}")
     else:
         print("Not enough data to display the chart.")
+
 
 def lineplot_chart(data, title="Line Chart"):
     """Displays a line chart of closing prices with an additional analytic."""
@@ -55,17 +55,20 @@ def lineplot_chart(data, title="Line Chart"):
         print("Not enough data to display the chart.")
 
 
-def generate_charts(data_15m, data_1h, data_1d, data_1w, data_1m, ticker_name):
+def generate_charts(ticker_name):
     """Generates candlestick and line charts for different time intervals."""
     timeframes = (" 15-Minute", " Hourly", " Daily", " Weekly", " Monthly")
     chart_types = (" Candlestick Chart", " Line Chart")
-
+    data_15m = pd.read_csv("../data/raw_data/data_15m.csv")
+    data_1h = pd.read_csv("../data/raw_data/data_1h.csv")
+    data_1d = pd.read_csv("../data/raw_data/data_1d.csv")
+    data_1w = pd.read_csv("../data/raw_data/data_1w.csv")
+    data_1m = pd.read_csv("../data/raw_data/data_1m.csv")
     # Generate charts for all timeframes
     datasets = [data_15m, data_1h, data_1d, data_1w, data_1m]
 
     for i, data in enumerate(datasets):
         candlestick_chart(data, ticker_name + timeframes[i] + chart_types[0])
         lineplot_chart(data, ticker_name + timeframes[i] + chart_types[1])
-
 
 # TODO: Implement function selection for different types of visualizations

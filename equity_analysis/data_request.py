@@ -9,8 +9,7 @@ def get_date(days_ago):
     """Returns a date string (YYYY-MM-DD) for the given number of days ago."""
     return (datetime.today() - timedelta(days=days_ago)).strftime('%Y-%m-%d')
 
-save_dir = "./financial_data"
-os.makedirs(save_dir, exist_ok=True)
+save_dir = "../data/financial_data"
 today = get_date(0)
 
 
@@ -37,6 +36,7 @@ def basic_analysis(ticker):
         "quarterly_income": ticker.quarterly_income_stmt
     }
 
+
 def save_analysis_to_csv(ticker_symbol):
     """Fetches fundamental data and saves each section to a CSV file."""
     data = basic_analysis(ticker_symbol)
@@ -61,6 +61,7 @@ def save_analysis_to_csv(ticker_symbol):
             df.to_csv(file_path, index=False)
 
         print(f"Saved {key} to {file_path}")
+
 
 def request_data(ticker, interval, start_days, end_days=0, save=False, filename=None):
     """
@@ -99,12 +100,12 @@ def request_data(ticker, interval, start_days, end_days=0, save=False, filename=
 
     # Optionally save the data to a CSV file
     if save and filename:
-        data.to_csv(f"./data/{filename}", index=False)
+        data.to_csv(f"../data/raw_data/{filename}", index=False)
 
     return data
 
 
-def request_all_data(ticker):
+def request_all_ticker_data(ticker):
     """
     Fetches stock data for multiple timeframes and saves them as CSV files.
 
@@ -157,14 +158,19 @@ def request_indices():
             merged_df = pd.merge(merged_df, df, on='Date', how='inner')
 
         # Load data_1d.csv and merge
-        data_1d = pd.read_csv("./data/data_1d.csv", parse_dates=["Date"])
+        data_1d = pd.read_csv("../data/raw_data/data_1d.csv", parse_dates=["Date"])
         data_1d = data_1d[['Date', 'Close']]
         data_1d.rename(columns={'Close': 'data_1d'}, inplace=True)
         merged_df = pd.merge(merged_df, data_1d, on='Date', how='inner')
 
         # Save the merged dataframe
-        merged_df.to_csv("./data/merged_indices.csv", index=False)
+        merged_df.to_csv("../data/raw_data/merged_indices.csv", index=False)
 
     print("All index data has been fetched, merged, and saved.")
 
 
+def all_data_request (ticker):
+    save_analysis_to_csv(ticker)
+    request_all_ticker_data(ticker)
+    request_indices()
+    print("All data has been fetched, merged, and saved.")

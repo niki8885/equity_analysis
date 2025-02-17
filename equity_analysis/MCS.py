@@ -3,11 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 import os
+from equity_analysis import analytics
 
-save_dir = "./plots"
-os.makedirs(save_dir, exist_ok=True)
+save_dir = "../data/plots"
 
-def prediction_mcs(data, days=30, simulations=1000):
+
+def prediction_mcs(days=30, simulations=1000):
     """
     Monte Carlo method for stock price forecasting.
 
@@ -19,6 +20,7 @@ def prediction_mcs(data, days=30, simulations=1000):
     Returns:
     - DataFrame with simulated price trajectories.
     """
+    data = pd.read_csv("../data/raw_data/data_1d.csv")
     # Extract closing prices
     close_prices = data['Close'].dropna().values
 
@@ -49,11 +51,16 @@ def prediction_mcs(data, days=30, simulations=1000):
 
     # Create a DataFrame with simulated price trajectories
     forecast_df = pd.DataFrame(simulations_results)
+    filename="forecast_results.csv"
+    raw_data_dir = "../data/raw_data"
+    file_path = os.path.join(raw_data_dir, filename)
+    forecast_df.to_csv(file_path, index=False)
 
     return forecast_df
 
 
-def conf_intervals(forecast):
+def conf_intervals():
+    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
     # Compute confidence intervals
     median_forecast = forecast.median(axis=1)  # 50th percentile (median)
     percentile_5 = forecast.quantile(0.05, axis=1)  # 5th percentile (worst-case scenario)
@@ -85,10 +92,15 @@ def conf_intervals(forecast):
     lower_bound = percentile_5[-1]
     upper_bound = percentile_95[-1]
 
+    print(f"Final Day Forecast:")
+    print(f"Median Price: {median_price}")
+    print(f"Lower Bound (5% percentile): {lower_bound}")
+    print(f"Upper Bound (95% percentile): {upper_bound}")
+
     return median_price, lower_bound, upper_bound
 
 
-def probability_of_target(forecast, target_price):
+def probability_of_target(target_price):
     """
     Calculate the probability of the price reaching or exceeding a target level.
 
@@ -100,14 +112,16 @@ def probability_of_target(forecast, target_price):
     - Probability (percentage) of reaching the target price within the forecast period.
     """
     # Count how many simulations reach or exceed the target price at any point
+    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
     simulations_reaching_target = (forecast >= target_price).any(axis=0).sum()
 
     # Compute probability as a percentage
     probability = (simulations_reaching_target / forecast.shape[1]) * 100
-
+    print(f'Probability of target = {probability} %')
     return probability
 
-def probability_distribution(forecast, current_price):
+def probability_distribution(current_price):
+    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
     """
     Calculate the probability of the price reaching different target levels.
 
@@ -126,7 +140,7 @@ def probability_distribution(forecast, current_price):
     for multiplier in np.arange(1, 1.51, 0.05):  # Adjusted range to include 1.25
         price = current_price * multiplier
         target_prices.append(price)
-        probability = probability_of_target(forecast, price)
+        probability = probability_of_target(price)
         probabilities.append(probability)
 
     # Create a DataFrame with results
@@ -134,7 +148,10 @@ def probability_distribution(forecast, current_price):
         "Target Price": target_prices,
         "Probability (%)": probabilities
     })
-
+    filename="probability.csv"
+    raw_data_dir = "../data/raw_data"
+    file_path = os.path.join(raw_data_dir, filename)
+    probability_df.to_csv(file_path, index=False)
     # Plot the probability distribution
     plt.figure(figsize=(10, 5))
     plt.plot(probability_df["Target Price"], probability_df["Probability (%)"], marker="o", linestyle="-", color="blue")
@@ -148,7 +165,7 @@ def probability_distribution(forecast, current_price):
     return probability_df
 
 
-def risk_reward_analysis(forecast, current_price, take_profit, stop_loss):
+def risk_reward_analysis(current_price, take_profit, stop_loss):
     """
     Calculate the probability of hitting Take-Profit and Stop-Loss levels and assess the Risk/Reward Ratio.
 
@@ -161,9 +178,10 @@ def risk_reward_analysis(forecast, current_price, take_profit, stop_loss):
     Returns:
     - Dictionary with probabilities of hitting Take-Profit and Stop-Loss, and Risk/Reward Ratio.
     """
+    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
     # Calculate probabilities
-    prob_take_profit = probability_of_target(forecast, take_profit)
-    prob_stop_loss = probability_of_target(forecast, stop_loss)
+    prob_take_profit = probability_of_target(take_profit)
+    prob_stop_loss = probability_of_target(stop_loss)
 
     # Calculate potential reward and risk
     potential_reward = take_profit - current_price
@@ -181,11 +199,11 @@ def risk_reward_analysis(forecast, current_price, take_profit, stop_loss):
         "Stop-Loss Probability (%)": round(float(prob_stop_loss), 2),
         "Risk/Reward Ratio": round(float(risk_reward_ratio), 2)
     }
-
+    print(result)
     return result
 
 
-def stress_test_mcs(forecast, sigma, stress_factor=1.5, max_price_multiplier=3, use_log_normal=True):
+def stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=True):
     """
     Perform stress testing by increasing volatility (σ) and assessing the impact on price distribution.
     Uses either a normal or log-normal distribution.
@@ -202,6 +220,9 @@ def stress_test_mcs(forecast, sigma, stress_factor=1.5, max_price_multiplier=3, 
     - DataFrame with stressed simulation results.
     - Visualization of the impact on price projections with median and confidence intervals.
     """
+    data = pd.read_csv("../data/raw_data/data_1d.csv")
+    sigma = analytics.calculate_historical_volatility(data)
+    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
     # Increase volatility by the stress factor
     stressed_sigma = min(sigma * stress_factor, 0.5)  # Limit max volatility to 50%
 

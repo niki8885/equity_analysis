@@ -1,12 +1,36 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 import os
 
-DATA_DIR = "data"
+DATA_DIR = "../data/raw_data/"
+
+
+def calculate_historical_volatility(data):
+    """
+    Calculate annualized historical volatility from existing dataset.
+
+    Arguments:
+    - data: DataFrame containing historical price data with a 'Close' column.
+
+    Returns:
+    - Annualized historical volatility.
+    """
+    # Calculate daily log returns
+    data["Log_Returns"] = np.log(data["Close"] / data["Close"].shift(1))
+
+    # Compute standard deviation of daily returns (ignoring NaN values)
+    daily_volatility = data["Log_Returns"].std()
+
+    # Annualized volatility (assuming 252 trading days per year)
+    annualized_volatility = daily_volatility * np.sqrt(252)
+
+    return annualized_volatility
+
 
 def moving_average(data, period=50):
     """Calculates the moving average (MA) for the given period."""
     return data['Close'].rolling(window=period).mean()
+
 
 def average_true_range(data, period=14):
     """Calculates the Average True Range (ATR) to measure volatility."""
@@ -16,6 +40,7 @@ def average_true_range(data, period=14):
     true_range = pd.Series(np.maximum.reduce([high_low, high_close, low_close]), index=data.index)
     return true_range.rolling(window=period).mean()
 
+
 def relative_strength_index(data, period=14):
     """Calculates the Relative Strength Index (RSI)."""
     delta = data['Close'].diff()
@@ -24,9 +49,11 @@ def relative_strength_index(data, period=14):
     rs = gain / loss
     return 100 - (100 / (1 + rs))
 
+
 def exponential_moving_average(data, period=12):
     """Calculates the Exponential Moving Average (EMA)."""
     return data['Close'].ewm(span=period, adjust=False).mean()
+
 
 def macd(data):
     """Calculates the Moving Average Convergence Divergence (MACD)."""
@@ -36,6 +63,7 @@ def macd(data):
     signal_line = macd_line.ewm(span=9, adjust=False).mean()
     return macd_line, signal_line
 
+
 def bollinger_bands(data, period=20, k=2):
     """Calculates Bollinger Bands."""
     ma = moving_average(data, period)
@@ -44,11 +72,13 @@ def bollinger_bands(data, period=20, k=2):
     lower_band = ma - (k * std_dev)
     return upper_band, lower_band
 
+
 def sharpe_ratio(data, risk_free_rate=0.01):
     """Calculates the Sharpe Ratio."""
     returns = data['Close'].pct_change()
     excess_returns = returns - risk_free_rate
     return excess_returns.mean() / returns.std()
+
 
 def alpha_beta(asset_returns, market_returns):
     """Calculates Alpha and Beta values."""
@@ -57,12 +87,13 @@ def alpha_beta(asset_returns, market_returns):
     alpha = np.mean(asset_returns) - beta * np.mean(market_returns)
     return alpha, beta
 
+
 def pe_ratio(stock_price, earnings_per_share):
     """Calculates the Price-to-Earnings (P/E) ratio."""
     return stock_price / earnings_per_share
 
 
-def add_to_csv():
+def add_analytics_to_df():
     allowed_files = {"data_1d.csv", "data_1h.csv", "data_1m.csv", "data_1w.csv", "data_15m.csv"}
 
     for file in os.listdir(DATA_DIR):
@@ -77,8 +108,6 @@ def add_to_csv():
             df['EMA_12'] = exponential_moving_average(df, 12)
             df['EMA_26'] = exponential_moving_average(df, 26)
             df['MACD'], df['Signal_Line'] = macd(df)
-            df['Upper_Band'], df['Lower_Band'] = bollinger_bands(df, 20, 2)
-            df['Sharpe_Ratio'] = sharpe_ratio(df)
 
             df.to_csv(file_path, index=False)
             print(f"Analytics added: {file}")

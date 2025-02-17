@@ -4,12 +4,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 
-save_dir = "./plots"
-os.makedirs(save_dir, exist_ok=True)
+save_dir = "../data/plots"
 
 
 def prepare_indices(ticker):
-    data = pd.read_csv("./data/merged_indices.csv")
+    data = pd.read_csv("../data/raw_data/merged_indices.csv")
     rename_dict = {
         "Date": "Date",
         "^GSPC": "S&P 500",
@@ -28,27 +27,11 @@ def prepare_indices(ticker):
 
     data.rename(columns=rename_dict, inplace=True)
 
-    processed_file_path = "./data/merged_indices.csv"
+    processed_file_path = "../data/raw_data/merged_indices.csv"
     data.to_csv(processed_file_path, index=False)
 
     return data
 
-def normalize_indices(data, type):
-    """
-    Normalizes index data based on the given method.
-    """
-    if type == "min_max":
-        scaler = MinMaxScaler()
-        data.iloc[:, 1:] = scaler.fit_transform(data.iloc[:, 1:])
-    elif type == "z_score":
-        scaler = StandardScaler()
-        data.iloc[:, 1:] = scaler.fit_transform(data.iloc[:, 1:])
-    elif type == "pct_change":
-        data.iloc[:, 1:] = data.iloc[:, 1:].pct_change().fillna(0)
-    else:
-        raise ValueError("Unsupported normalization type")
-    return data
-
 
 def normalize_indices(data, type):
     """
@@ -67,10 +50,11 @@ def normalize_indices(data, type):
     return data
 
 
-def indices_corr(data, method, ticker_name):
+def indices_corr(method, ticker_name):
     """
     Computes the correlation matrix of the indices and a given stock.
     """
+    data = prepare_indices(ticker_name)
     if method == "pearson":
         data = normalize_indices(data, "pct_change")
 
@@ -85,9 +69,6 @@ def indices_corr(data, method, ticker_name):
         corr_matrix = numeric_data.corr(method="kendall")
     else:
         raise ValueError("Unsupported correlation method")
-
-    print("Correlation Matrix:")
-    print(corr_matrix)
 
     # Find the indices with highest correlation
     best_corr_indices = corr_matrix[ticker_name].drop(ticker_name).nlargest(3)
