@@ -1,14 +1,23 @@
-import data_request, charts, vis_analytics, analytics, MCS, indices, utils
+import data_request
+import charts
+import vis_analytics
+import analytics
+import MCS
+import indices
+import utils
 
-# utils.clear_folders("plots","data","financial_data")
+
+
+utils.clear_folders("plots","data","financial_data")
 
 ticker = 'MS'
 
 # Fetch and save fundamental data
 basic_info = data_request.basic_analysis(ticker)
 data_request.save_analysis_to_csv(ticker)
-data_request.request_indices()
 data_15m, data_1h, data_1d, data_1w, data_1m = data_request.request_all_data(ticker)
+data_request.request_indices()
+indices_df = indices.prepare_indices(ticker)
 
 # Ensure all files are fully saved before continuing
 print("Data fetching and saving completed. Now generating charts...")

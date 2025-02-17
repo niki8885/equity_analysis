@@ -6,9 +6,10 @@ import os
 
 save_dir = "./plots"
 os.makedirs(save_dir, exist_ok=True)
-data = pd.read_csv("./data/merged_indices.csv")
+
 
 def prepare_indices(ticker):
+    data = pd.read_csv("./data/merged_indices.csv")
     rename_dict = {
         "Date": "Date",
         "^GSPC": "S&P 500",
