@@ -1,6 +1,7 @@
 import os
 import shutil
-
+import glob
+import pandas as pd
 
 def clear_folders(*folders):
     """Deletes the specified folders completely and recreates them empty."""
@@ -31,3 +32,37 @@ def clear_working_folders():
         print(f"Created: {path}")
 
     print("Data folder structure recreated successfully!")
+
+
+def price(ticker, method = "current"):
+    """Loads the latest available price from a file matching {ticker}_analysis.csv"""
+    file_pattern = f"../data/financial_data/{ticker}_analysis.csv"
+    files = glob.glob(file_pattern)
+
+    if not files:
+        raise FileNotFoundError(f"No file matching {ticker}_analysis.csv found in {os.path.dirname(file_pattern)}")
+
+    # Select the first matching file (you can modify this logic if needed)
+    file_path = files[0]
+    data = pd.read_csv(file_path)
+
+    match method:
+        case "current":
+            price = data[method].dropna().iloc[-1]
+            print(f"Current price of {ticker}: {price}")
+        case "high":
+            price = data[method].dropna().iloc[-1]
+            print(f"Highest price of {ticker}: {price}")
+        case "low":
+            price = data[method].dropna().iloc[-1]
+            print(f"Lowest price of {ticker}: {price}")
+        case "mean":
+            price = data[method].dropna().iloc[-1]
+            print(f"Mean price of {ticker}: {price}")
+        case "median":
+            price = data[method].dropna().iloc[-1]
+            print(f"Median price of {ticker}: {price}")
+        case _:
+            raise ValueError(f"Invalid method: {method}")
+
+    return price

@@ -48,47 +48,50 @@ python main.py
 import equity_analysis as ea
 
 ticker = 'MS'
-
 ea.clear_working_folders()
 ea.all_data_request(ticker)
-ea.indices_corr("pearson", ticker)
-ea.indices_corr("spearman", ticker)
-ea.indices_corr("kendall", ticker)
+ea.request_fin_data(ticker)
+ea.get_latest_fundamental(ticker)
+current_price = ea.price(ticker,"current")
 ea.add_analytics_to_df()
 ea.generate_charts(ticker)
 ea.prediction_mcs()
 ea.conf_intervals()
-ea.probability_of_target(150)
-ea.probability_distribution(139)
-ea.risk_reward_analysis(139, 150, 110)
+ea.probability_of_target (150)
+ea.probability_distribution(current_price)
+ea.risk_reward_analysis(current_price,150,110)
 ea.stress_test_mcs()
-ea.stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=True)
-ea.stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=False)
+ea.stress_test_mcs(stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=True)
+ea.stress_test_mcs(stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=False)
+ea.indices_corr("pearson", ticker)
+ea.indices_corr("spearman", ticker)
+ea.indices_corr("kendall", ticker)
 ```
 
 ## Project Structure
 
 ```
 📦 equity_analysis
-├── data/                 # Main directory for storing CSV files
-│   ├── plots/            # Directory for saving generated charts
-│   ├── financial_data/   # Directory for storing fundamental financial data
-│   ├── raw_data/         # Directory for storing raw stock data
-│   ├── reports/          # Directory for saving generated reports
+├── data/                     # Main directory for storing CSV files
+│   ├── plots/                # Directory for saving generated charts
+│   ├── financial_data/       # Directory for storing fundamental financial data
+│   ├── raw_data/             # Directory for storing raw stock data
+│   ├── reports/              # Directory for saving generated reports
 │
-├── equity_analysis/       # Python package containing analysis scripts
-│   ├── __init__.py       # Marks this directory as a Python package
-│   ├── data_request.py   # Fetches stock data and fundamental analysis
-│   ├── indices.py        # Index correlation analysis and normalization
-│   ├── analytics.py      # Computes historical volatility and risk analysis
-│   ├── charts.py         # Generates candlestick and line charts
-│   ├── MCS.py            # Monte Carlo simulation for stock price prediction
-│   ├── utils.py          # Handles data, charts, and report cleanup
+├── equity_analysis/          # Python package containing analysis scripts
+│   ├── __init__.py           # Marks this directory as a Python package
+│   ├── data_request.py       # Fetches stock data and fundamental analysis
+│   ├── indices.py            # Index correlation analysis and normalization
+│   ├── fundamental_analysis.py  # Extracts financial metrics, computes key ratios
+│   ├── analytics.py          # Computes historical volatility and risk analysis
+│   ├── charts.py             # Generates candlestick and line charts
+│   ├── MCS.py                # Monte Carlo simulation for stock price prediction
+│   ├── utils.py              # Handles data, charts, and report cleanup
 │
-├── main.py               # Main script executing the entire analysis pipeline
-├── requirements.txt      # Dependencies list
-├── LICENSE.md            # License documentation
-├── README.md             # Project documentation and usage instructions
+├── main.py                   # Main script executing the entire analysis pipeline
+├── requirements.txt          # Dependencies list
+├── LICENSE.md                # License documentation
+├── README.md                 # Project documentation and usage instructions
 ```
 
 ## License

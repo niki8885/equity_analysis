@@ -27,6 +27,7 @@ def basic_analysis(ticker):
         "info": ticker.info,
         "calendar": ticker.calendar,
         "dividends": ticker.dividends,
+        "financial": ticker.financials,
         "splits": ticker.splits,
         "capital_gains": ticker.capital_gains,
         "balance_sheets": ticker.balance_sheet,
@@ -37,7 +38,7 @@ def basic_analysis(ticker):
     }
 
 
-def save_analysis_to_csv(ticker_symbol):
+def request_fin_data(ticker_symbol):
     """Fetches fundamental data and saves each section to a CSV file."""
     data = basic_analysis(ticker_symbol)
 
@@ -170,7 +171,8 @@ def request_indices():
 
 
 def all_data_request (ticker):
-    save_analysis_to_csv(ticker)
     request_all_ticker_data(ticker)
     request_indices()
     print("All data has been fetched, merged, and saved.")
+
+request_fin_data("MS")
