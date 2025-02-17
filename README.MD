@@ -74,6 +74,7 @@ ea.indices_corr("kendall", ticker)
 📦 equity_analysis
 ├── data/                     # Main directory for storing CSV files
 │   ├── plots/                # Directory for saving generated charts
+│   ├── plots_indicators/     # Directory for saving generated charts with indicators
 │   ├── financial_data/       # Directory for storing fundamental financial data
 │   ├── raw_data/             # Directory for storing raw stock data
 │   ├── reports/              # Directory for saving generated reports

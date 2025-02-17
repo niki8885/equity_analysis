@@ -8,6 +8,7 @@ ea.get_latest_fundamental(ticker)
 current_price = ea.price(ticker,"current")
 ea.add_analytics_to_df()
 ea.generate_charts(ticker)
+ea.plot_indicators()
 ea.prediction_mcs()
 ea.conf_intervals()
 ea.probability_of_target (150)
@@ -20,16 +21,6 @@ ea.indices_corr("pearson", ticker)
 ea.indices_corr("spearman", ticker)
 ea.indices_corr("kendall", ticker)
 
-
-# TODO: 📌 Liquidity and Financial Stability
-# TODO: Current Ratio
-# TODO: Quick Ratio
-# TODO: Debt-to-Equity Ratio (D/E)
-# TODO: Interest Coverage Ratio
-
-# TODO: 📌 Efficiency Assessment
-# TODO: Asset Turnover Ratio
-# TODO: Inventory Turnover Ratio
 
 # TODO: 📉 Stock Valuation
 # TODO: P/E Ratio (Price-to-Earnings)

@@ -20,7 +20,7 @@ def clear_folders(*folders):
 def clear_working_folders():
     """Completely removes and recreates the 'data' folder and subdirectories (outside the package)."""
     base_data_folder = "../data"  # Make sure it's outside 'mypackage/'
-    subfolders = ["plots", "financial_data", "reports", "raw_data"]
+    subfolders = ["plots", "financial_data", "reports", "raw_data","plots_indicators"]
 
     # Ensure the main 'data' folder is completely reset
     clear_folders(base_data_folder)
@@ -30,8 +30,6 @@ def clear_working_folders():
         path = os.path.join(base_data_folder, subfolder)
         os.makedirs(path, exist_ok=True)
         print(f"Created: {path}")
-
-    print("Data folder structure recreated successfully!")
 
 
 def price(ticker, method = "current"):

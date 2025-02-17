@@ -5,7 +5,7 @@ import matplotlib.dates as mdates
 import os
 
 save_dir = "../data/plots"
-
+raw_data_dir = "../data/raw_data"
 
 def candlestick_chart(data, title="Candlestick Chart"):
     """Displays a candlestick chart and saves it to a file."""
@@ -71,4 +71,69 @@ def generate_charts(ticker_name):
         candlestick_chart(data, ticker_name + timeframes[i] + chart_types[0])
         lineplot_chart(data, ticker_name + timeframes[i] + chart_types[1])
 
-# TODO: Implement function selection for different types of visualizations
+save_dir = "../data/plots_indicators"
+indicators = ["MA_50", "ATR_14", "RSI_14", "EMA_12", "EMA_26", "MACD", "Signal_Line"]
+timeframes = ["15m", "1h", "1d", "1w", "1m"]
+
+def plot_indicators():
+    """Generates separate line charts for each indicator with price (Close) for reference."""
+
+    for timeframe in timeframes:
+        filename = f"data_{timeframe}.csv"
+        filepath = os.path.join(raw_data_dir, filename)
+
+        if os.path.exists(filepath):
+            data = pd.read_csv(filepath)
+
+            # Ensure 'Date' column exists and is formatted correctly
+            if "Date" in data.columns:
+                data["Date"] = pd.to_datetime(data["Date"])
+                data.set_index("Date", inplace=True)
+
+            # Check if 'Close' column exists
+            if "Close" not in data.columns:
+                print(f"'Close' column not found in {filename}")
+                continue
+
+            # Filter available indicators
+            available_indicators = [col for col in indicators if col in data.columns]
+
+            for indicator in available_indicators:
+                fig, ax1 = plt.subplots(figsize=(12, 6))
+
+                # Plot Close price on the left y-axis
+                ax1.plot(data.index, data["Close"], label="Close Price", color="blue", alpha=0.6)
+                ax1.set_xlabel("Date", color="black")
+                ax1.set_ylabel("Price", color="blue")
+                ax1.tick_params(axis="y", labelcolor="blue")
+                ax1.tick_params(axis="x", colors="black")
+
+                # Second y-axis for the indicator
+                ax2 = ax1.twinx()
+                ax2.plot(data.index, data[indicator], label=indicator, color="red")
+                ax2.set_ylabel(f"{indicator} Value", color="red")
+                ax2.tick_params(axis="y", labelcolor="red")
+
+                # Format x-axis
+                ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
+                fig.autofmt_xdate()
+
+                # Add grid
+                ax1.grid(True, linestyle="--", linewidth=0.5, alpha=0.7)
+
+                # Add legend
+                ax1.legend(loc="upper left")
+                ax2.legend(loc="upper right")
+
+                plt.title(f"{indicator} ({timeframe})", color="black")
+                fig.tight_layout()
+
+                # Save the chart
+                save_path = os.path.join(save_dir, f"{indicator}_{timeframe}.png")
+                plt.savefig(save_path, dpi=600, bbox_inches="tight")
+                plt.close()
+
+                print(f"Chart saved: {save_path}")
+
+        else:
+            print(f"File not found: {filepath}")
