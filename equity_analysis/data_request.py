@@ -175,4 +175,3 @@ def all_data_request (ticker):
     request_indices()
     print("All data has been fetched, merged, and saved.")
 
-request_fin_data("MS")

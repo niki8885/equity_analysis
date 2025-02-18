@@ -4,4 +4,4 @@ from .indices import indices_corr
 from .analytics import add_analytics_to_df
 from .charts import generate_charts, plot_indicators
 from .MCS import prediction_mcs, conf_intervals, probability_of_target, probability_distribution,risk_reward_analysis,stress_test_mcs
-from .fundamental_analysis import get_latest_fundamental
+from .fundamental_analysis import get_latest_fundamental, get_latest_stock_valuation

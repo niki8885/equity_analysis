@@ -111,3 +111,4 @@ def add_analytics_to_df():
 
             df.to_csv(file_path, index=False)
             print(f"Analytics added: {file}")
+

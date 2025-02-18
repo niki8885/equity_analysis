@@ -1,10 +1,11 @@
 import equity_analysis as ea
 
 ticker = 'MS'
-ea.clear_working_folders()
+# ea.clear_working_folders()
 ea.all_data_request(ticker)
 ea.request_fin_data(ticker)
 ea.get_latest_fundamental(ticker)
+ea.get_latest_stock_valuation(ticker)
 current_price = ea.price(ticker,"current")
 ea.add_analytics_to_df()
 ea.generate_charts(ticker)
@@ -20,14 +21,6 @@ ea.stress_test_mcs(stress_factor = 1.5, max_price_multiplier = 3, use_log_normal
 ea.indices_corr("pearson", ticker)
 ea.indices_corr("spearman", ticker)
 ea.indices_corr("kendall", ticker)
-
-
-# TODO: 📉 Stock Valuation
-# TODO: P/E Ratio (Price-to-Earnings)
-# TODO: P/B Ratio (Price-to-Book)
-# TODO: P/S Ratio (Price-to-Sales)
-# TODO: EV/EBITDA Ratio
-# TODO: EV/Sales Ratio
 
 # TODO: 📌 Dividend Metrics
 # TODO: Dividend Yield
