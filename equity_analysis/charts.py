@@ -71,13 +71,13 @@ def generate_charts(ticker_name):
         candlestick_chart(data, ticker_name + timeframes[i] + chart_types[0])
         lineplot_chart(data, ticker_name + timeframes[i] + chart_types[1])
 
-save_dir = "../data/plots_indicators"
+
 indicators = ["MA_50", "ATR_14", "RSI_14", "EMA_12", "EMA_26", "MACD", "Signal_Line"]
 timeframes = ["15m", "1h", "1d", "1w", "1m"]
 
 def plot_indicators():
     """Generates separate line charts for each indicator with price (Close) for reference."""
-
+    save_dir = "../data/plots_indicators"
     for timeframe in timeframes:
         filename = f"data_{timeframe}.csv"
         filepath = os.path.join(raw_data_dir, filename)

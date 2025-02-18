@@ -4,14 +4,17 @@ Equity Analysis is a Python-based project for fetching, analyzing, and visualizi
 
 ## Features
 
-- **Data Retrieval:** Fetches historical stock market data using `yfinance`.
+- **Data Retrieval:** Fetches historical stock market data using yfinance.
 - **Technical Analysis:** Implements indicators like Moving Averages, RSI, ATR, MACD, Bollinger Bands, and Sharpe Ratio.
 - **Fundamental Analysis:** Retrieves key financial metrics, including income statements, balance sheets, and analyst targets.
 - **Monte Carlo Simulations:** Performs Monte Carlo-based stock price forecasting and risk analysis.
 - **Risk/Reward Analysis:** Evaluates probability distributions for different price targets and computes risk/reward ratios.
-- **Visualization:** Generates candlestick and line charts using `mplfinance` and `matplotlib`.
+- **Visualization:** Generates candlestick and line charts using mplfinance and matplotlib.
 - **Index Correlation Analysis:** Computes and visualizes correlation between stock prices and global indices.
 - **Data Normalization:** Supports Min-Max Scaling, Z-score normalization, and percentage change transformations.
+- **ARIMA:** Time-series forecasting method that captures trends, seasonality, and noise in stock prices.
+- **GARCH (Generalized Autoregressive Conditional Heteroskedasticity):** Models and forecasts financial market volatility.
+- **GBM (Geometric Brownian Motion):** Simulates stock price movements using stochastic processes for risk analysis and forecasting.
 
 ## Installation
 
@@ -24,20 +27,21 @@ pip install -r requirements.txt
 
 ### Required Libraries
 The project uses the following Python libraries:
-- `yfinance`
-- `numpy`
-- `pandas`
-- `matplotlib`
-- `mplfinance`
-- `scipy`
-- `seaborn`
-- `sklearn`
+- yfinance
+- numpy
+- pandas
+- matplotlib
+- mplfinance
+- scipy
+- seaborn
+- sklearn
 
 ## Usage
 
 The entire analysis workflow can be executed using `main.py`. This script fetches stock and index data, applies technical and fundamental analysis, runs Monte Carlo simulations, generates charts, and performs risk/reward assessments.
 
 ### Running the Main Script
+
 ```sh
 python main.py
 ```
@@ -52,17 +56,19 @@ ea.clear_working_folders()
 ea.all_data_request(ticker)
 ea.request_fin_data(ticker)
 ea.get_latest_fundamental(ticker)
+ea.get_latest_stock_valuation(ticker)
 current_price = ea.price(ticker,"current")
 ea.add_analytics_to_df()
 ea.generate_charts(ticker)
+ea.plot_indicators()
 ea.prediction_mcs()
 ea.conf_intervals()
 ea.probability_of_target (150)
 ea.probability_distribution(current_price)
 ea.risk_reward_analysis(current_price,150,110)
-ea.stress_test_mcs()
-ea.stress_test_mcs(stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=True)
-ea.stress_test_mcs(stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=False)
+ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=True)
+ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=False)
+ea.arima_model(ticker)
 ea.indices_corr("pearson", ticker)
 ea.indices_corr("spearman", ticker)
 ea.indices_corr("kendall", ticker)
@@ -81,6 +87,8 @@ ea.indices_corr("kendall", ticker)
 │
 ├── equity_analysis/          # Python package containing analysis scripts
 │   ├── __init__.py           # Marks this directory as a Python package
+│   ├── arima_garch.py        # Implements ARIMA and GARCH models
+│   ├── GBM.py                # Implements Geometric Brownian Motion for stock simulations
 │   ├── data_request.py       # Fetches stock data and fundamental analysis
 │   ├── indices.py            # Index correlation analysis and normalization
 │   ├── fundamental_analysis.py  # Extracts financial metrics, computes key ratios

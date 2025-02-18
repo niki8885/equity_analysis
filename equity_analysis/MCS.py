@@ -51,7 +51,7 @@ def prediction_mcs(days=30, simulations=1000):
 
     # Create a DataFrame with simulated price trajectories
     forecast_df = pd.DataFrame(simulations_results)
-    filename="forecast_results.csv"
+    filename="forecast_results_mcs.csv"
     raw_data_dir = "../data/raw_data"
     file_path = os.path.join(raw_data_dir, filename)
     forecast_df.to_csv(file_path, index=False)
@@ -148,7 +148,7 @@ def probability_distribution(current_price):
         "Target Price": target_prices,
         "Probability (%)": probabilities
     })
-    filename="probability.csv"
+    filename="probability_mcs.csv"
     raw_data_dir = "../data/raw_data"
     file_path = os.path.join(raw_data_dir, filename)
     probability_df.to_csv(file_path, index=False)
@@ -203,7 +203,7 @@ def risk_reward_analysis(current_price, take_profit, stop_loss):
     return result
 
 
-def stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=True):
+def stress_test_mcs(ticker, stress_factor=1.5, max_price_multiplier=3, use_log_normal=True):
     """
     Perform stress testing by increasing volatility (σ) and assessing the impact on price distribution.
     Uses either a normal or log-normal distribution.
@@ -222,7 +222,7 @@ def stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=Tr
     """
     data = pd.read_csv("../data/raw_data/data_1d.csv")
     sigma = analytics.calculate_historical_volatility(data)
-    forecast = pd.read_csv("../data/raw_data/forecast_results.csv")
+    forecast = pd.read_csv("../data/raw_data/forecast_results_MCS.csv")
     # Increase volatility by the stress factor
     stressed_sigma = min(sigma * stress_factor, 0.5)  # Limit max volatility to 50%
 
@@ -273,7 +273,7 @@ def stress_test_mcs(stress_factor=1.5, max_price_multiplier=3, use_log_normal=Tr
                      label="90% Confidence Interval")
 
     dist_type = "Log-Normal" if use_log_normal else "Normal"
-    plt.title(f"Stress Test: Monte Carlo Price Forecast with {stress_factor}x Volatility ({dist_type} Distribution)")
+    plt.title(f"Stress Test {ticker}: Monte Carlo Price Forecast with {stress_factor}x Volatility ({dist_type} Distribution)")
     plt.xlabel("Days")
     plt.ylabel("Price")
     plt.legend()

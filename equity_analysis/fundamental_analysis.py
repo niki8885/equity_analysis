@@ -1,7 +1,7 @@
 import os
 import glob
 import pandas as pd
-from utils import price
+from .utils import price
 
 def fundamental(ticker):
     def load_csv(file_pattern):
