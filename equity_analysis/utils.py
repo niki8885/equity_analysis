@@ -19,7 +19,7 @@ def clear_folders(*folders):
 
 def clear_working_folders():
     """Completely removes and recreates the 'data' folder and subdirectories (outside the package)."""
-    base_data_folder = "../data"  # Make sure it's outside 'mypackage/'
+    base_data_folder = "./data"  # Make sure it's outside 'mypackage/'
     subfolders = ["plots", "financial_data", "reports", "raw_data","plots_indicators"]
 
     # Ensure the main 'data' folder is completely reset

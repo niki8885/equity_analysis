@@ -100,7 +100,7 @@ def get_latest_fundamental(ticker,discount_rate = 0.1, years = 5,growth_rate = 0
         print(f"{metric:<35} {value:,.2f}")
 
     return latest_values
-get_latest_fundamental("MS")
+
 
 def stock_valuation(ticker):
     df_income = load_csv(f"../data/financial_data/{ticker}_income.csv")

@@ -1,7 +1,7 @@
 import equity_analysis as ea
 
 ticker = 'MS'
-# ea.clear_working_folders()
+ea.clear_working_folders()
 ea.all_data_request(ticker)
 ea.request_fin_data(ticker)
 ea.get_latest_fundamental(ticker)
