@@ -1,25 +1,29 @@
 import os
 import glob
 import pandas as pd
-from .utils import price
+from equity_analysis.utils import price
 
-def fundamental(ticker):
-    def load_csv(file_pattern):
-        files = glob.glob(file_pattern)
-        if not files:
-            raise FileNotFoundError(
-                f"No file matching {os.path.basename(file_pattern)} found in {os.path.dirname(file_pattern)}")
-        return pd.read_csv(files[0])
 
+def load_csv(file_pattern):
+    files = glob.glob(file_pattern)
+    if not files:
+        raise FileNotFoundError(
+            f"No file matching {os.path.basename(file_pattern)} found in {os.path.dirname(file_pattern)}")
+    return pd.read_csv(files[0])
+
+
+def get_value(df, row_name, date):
+    match = df[df.iloc[:, 0].str.contains(row_name, case=False, na=False)]
+    return match[date].values[0] if not match.empty else 0
+
+
+def fundamental(ticker,discount_rate = 0.1, years = 5,growth_rate = 0.05):
     df_income = load_csv(f"../data/financial_data/{ticker}_income.csv")
     df_balance = load_csv(f"../data/financial_data/{ticker}_balance_sheets.csv")
     df_financial = load_csv(f"../data/financial_data/{ticker}_financial.csv")
+    df_cashflow= load_csv(f"../data/financial_data/{ticker}_cashflow.csv")
 
     dates = df_income.columns[1:]
-
-    def get_value(df, row_name, date):
-        match = df[df.iloc[:, 0].str.contains(row_name, case=False, na=False)]
-        return match[date].values[0] if not match.empty else 0
 
     results = {}
 
@@ -33,6 +37,7 @@ def fundamental(ticker):
         total_assets = get_value(df_balance, "Total Assets", date)
         shareholders_equity = get_value(df_balance, "Stockholders Equity", date)
         pretax_income = get_value(df_financial, "Pretax Income", date)
+        fcf = get_value(df_cashflow, "Free Cash Flow", date)
 
         current_assets = sum(
             get_value(df_balance, name, date) for name in
@@ -53,6 +58,11 @@ def fundamental(ticker):
         d_e = total_liabilities / shareholders_equity if shareholders_equity else 0
         int_cov_ratio = ebitda / interest_expense if interest_expense else 0
         asset_turnover_ratio = total_revenue / total_assets if total_assets else 0
+        future_fcfs = [fcf * (1 + growth_rate) ** i for i in range(1, years + 1)]
+        discounted_fcfs = [future_fcfs[i] / ((1 + discount_rate) ** (i + 1)) for i in range(years)]
+        dcf_value = sum(discounted_fcfs)
+        liquidation_value = total_assets - total_liabilities
+
         results[date] = {
             "Revenue": total_revenue,
             "Net Income": net_income,
@@ -63,7 +73,9 @@ def fundamental(ticker):
             "Current Ratio": current_ratio,
             "Debt-to-Equity Ratio (D/E)": d_e,
             "Interest Coverage Ratio": int_cov_ratio,
-            "Asset Turnover Ratio": asset_turnover_ratio
+            "Asset Turnover Ratio": asset_turnover_ratio,
+            "Discounted Cash Flow": dcf_value,
+            "Liquidation Value": liquidation_value
         }
 
     df_results = pd.DataFrame.from_dict(results, orient='index')
@@ -75,8 +87,8 @@ def fundamental(ticker):
     return df_results
 
 
-def get_latest_fundamental(ticker):
-    df = fundamental(ticker)
+def get_latest_fundamental(ticker,discount_rate = 0.1, years = 5,growth_rate = 0.05):
+    df = fundamental(ticker,discount_rate, years,growth_rate)
     latest_date = df.index[-1]
     latest_values = df.loc[latest_date]
 
@@ -88,25 +100,14 @@ def get_latest_fundamental(ticker):
         print(f"{metric:<35} {value:,.2f}")
 
     return latest_values
-
+get_latest_fundamental("MS")
 
 def stock_valuation(ticker):
-    def load_csv(file_pattern):
-        files = glob.glob(file_pattern)
-        if not files:
-            raise FileNotFoundError(
-                f"No file matching {os.path.basename(file_pattern)} found in {os.path.dirname(file_pattern)}")
-        return pd.read_csv(files[0])
-
     df_income = load_csv(f"../data/financial_data/{ticker}_income.csv")
     df_balance = load_csv(f"../data/financial_data/{ticker}_balance_sheets.csv")
     df_info = load_csv(f"../data/financial_data/{ticker}_info.csv")
 
     dates = df_income.columns[1:]
-
-    def get_value(df, row_name, date):
-        match = df[df.iloc[:, 0].str.contains(row_name, case=False, na=False)]
-        return match[date].values[0] if not match.empty else 0
 
     results = {}
 
@@ -165,3 +166,38 @@ def get_latest_stock_valuation(ticker):
         print(f"{metric:<35} {value:,.2f}")
 
     return latest_values
+
+
+def get_dividend_metrics(ticker):
+    # Load financial data
+    df_info = load_csv(f"../data/financial_data/{ticker}_info.csv")
+    current_price = price(ticker, method="current")
+
+    # Extract and handle missing data
+    payout_ratio = df_info["payoutRatio"].dropna().iloc[-1] if not df_info["payoutRatio"].dropna().empty else None
+    div_rate = df_info["dividendRate"].dropna().iloc[-1] if not df_info["dividendRate"].dropna().empty else None
+    dividend_yield = (div_rate / current_price) * 100 if div_rate and current_price else None
+
+    # Store results in a dictionary
+    metrics = {
+        "Dividend Yield (%)": dividend_yield,
+        "Payout Ratio": payout_ratio
+    }
+
+    # Print formatted output
+    print("\nDividend Metrics for", ticker)
+    print("-" * 40)
+    print(f"Dividend Yield (%): {metrics['Dividend Yield (%)']:.2f}%" if metrics["Dividend Yield (%)"] is not None else "Dividend Yield: N/A")
+    print(f"Payout Ratio: {metrics['Payout Ratio']:.2f}" if metrics["Payout Ratio"] is not None else "Payout Ratio: N/A")
+    print("-" * 40)
+
+    # Convert to DataFrame and save as CSV
+    df_results = pd.DataFrame(metrics, index=[0])  # Convert dictionary to DataFrame properly
+
+    output_dir = "../data/reports"
+    os.makedirs(output_dir, exist_ok=True)  # Ensure directory exists
+    output_path = os.path.join(output_dir, f"{ticker}_dividend_metrics_report.csv")
+
+    df_results.to_csv(output_path, index=False)  # Save without index
+
+    return metrics

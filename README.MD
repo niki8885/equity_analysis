@@ -57,6 +57,7 @@ ea.all_data_request(ticker)
 ea.request_fin_data(ticker)
 ea.get_latest_fundamental(ticker)
 ea.get_latest_stock_valuation(ticker)
+ea.get_dividend_metrics(ticker)
 current_price = ea.price(ticker,"current")
 ea.add_analytics_to_df()
 ea.generate_charts(ticker)
@@ -69,9 +70,12 @@ ea.risk_reward_analysis(current_price,150,110)
 ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=True)
 ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=False)
 ea.arima_model(ticker)
+ea.garch_model(ticker)
+ea.gbm_model(ticker)
 ea.indices_corr("pearson", ticker)
 ea.indices_corr("spearman", ticker)
 ea.indices_corr("kendall", ticker)
+
 ```
 
 ## Project Structure
