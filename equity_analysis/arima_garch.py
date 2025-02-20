@@ -1,8 +1,10 @@
 import pandas as pd
+import numpy as np
 import os
 import matplotlib.pyplot as plt
 from statsmodels.tsa.stattools import adfuller, pacf, acf
 from statsmodels.tsa.arima.model import ARIMA
+from arch import arch_model
 
 save_dir = "../data/plots"
 
@@ -99,5 +101,120 @@ def arima_model(ticker):
 
     return forecast_df
 
+
+def find_garch_q(series, max_lags=5):
+    """Find optimal q (ARCH order) based on ACF of squared returns."""
+    squared_series = series.dropna() ** 2  # GARCH models use squared returns
+    acf_values = acf(squared_series.values, nlags=min(max_lags, len(series) - 1))
+
+    for i in range(1, len(acf_values)):
+        if abs(acf_values[i]) < (2 / (len(series) ** 0.5)):  # Significance threshold
+            return i - 1
+
+    return min(max_lags, len(series) - 1)
+
+
+def find_garch_p(series, max_lags=5):
+    """Find optimal p (GARCH order) based on PACF of squared returns."""
+    squared_series = series.dropna() ** 2  # Use squared log returns
+    pacf_values = pacf(squared_series.values, nlags=min(max_lags, len(series) - 1))
+
+    for i in range(1, len(pacf_values)):
+        if abs(pacf_values[i]) < (2 / (len(series) ** 0.5)):  # Significance threshold
+            return i - 1
+
+    return min(max_lags, len(series) - 1)
+
+
+def garch_model(ticker):
+    # Load data
+    data = pd.read_csv("../data/raw_data/data_1d.csv")
+
+    # Adjust close prices
+    data["Adj Close"] = data["Close"] * (data["Close"] / data["Close"].shift(1))
+
+    # Compute log returns
+    data["Log return"] = np.log(data["Adj Close"] / data["Adj Close"].shift(1))
+
+    # Handle NaN and Inf values
+    data = data.replace([np.inf, -np.inf], np.nan).dropna()
+
+    # Ensure index is datetime for better visualization
+    data.index = pd.to_datetime(data.index)
+
+    # Find optimal p and q
+    best_p = find_garch_p(data["Log return"])
+    best_q = find_garch_q(data["Log return"])
+
+    print(f"Optimal GARCH(p,q): ({best_p}, {best_q})")
+
+    # Fit the GARCH model
+    garch_model = arch_model(data["Log return"] * 100, vol="Garch", p=best_p, q=best_q, mean="Zero", dist="normal")
+    garch_result = garch_model.fit(disp="off")
+
+    print(garch_result.summary())
+
+    # Extract volatility
+    data["Volatility"] = np.sqrt(garch_result.conditional_volatility)
+
+    # Plot estimated volatility
+    plt.figure(figsize=(10, 4))
+    plt.plot(data.index, data["Volatility"], color="red", label="GARCH Estimated Volatility")
+    plt.xlabel("Date")
+    plt.title(f"{ticker} Estimated Volatility from GARCH Model")
+    plt.legend()
+    plt.grid(True)
+
+    save_path = os.path.join(save_dir, f"{ticker} Estimated Volatility from GARCH Model")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+
+    # Forecast future volatility
+    forecast_horizon = 30
+    forecast = garch_result.forecast(horizon=forecast_horizon)
+
+    # Extract variance forecast
+    predicted_vol = np.sqrt(forecast.variance.values[-1, :])
+
+    # Plot predicted volatility
+    plt.figure(figsize=(10, 4))
+    plt.plot(predicted_vol, marker="o", label="Predicted Volatility")
+    plt.title(f"{ticker} GARCH 30-Day Volatility Forecast")
+    plt.legend()
+    plt.grid(True)
+
+    save_path = os.path.join(save_dir, f"{ticker} GARCH 30-Day Volatility Forecast")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+
+    # Rolling volatility for comparison
+    data["Rolling Volatility"] = data["Log return"].rolling(window=30).std() * 100
+
+    # 🚨 Identify the index with the highest rolling volatility
+    spike_index = data["Rolling Volatility"].idxmax()
+
+    # Plot volatility comparison
+    plt.figure(figsize=(10, 4))
+    plt.plot(data.index, data["Volatility"], color="red", label="GARCH Volatility")
+    plt.plot(data.index, data["Rolling Volatility"], linestyle="dashed", color="blue", label="Rolling Volatility (30-day)")
+
+    # Add a vertical line at the spike in volatility
+    if not pd.isna(spike_index):  # Ensure it's a valid index
+        plt.axvline(x=spike_index, color="gray", linestyle="dotted", label="Volatility Spike")
+
+    plt.title(f"{ticker} Volatility Comparison")
+    plt.xlabel("Date")
+    plt.legend()
+    plt.grid(True)
+
+    save_path = os.path.join(save_dir, f"{ticker} Volatility Comparison")
+    plt.savefig(save_path, dpi=600, bbox_inches='tight')
+
+    # ✅ Value at Risk (VaR) Calculation
+    confidence_level = 0.95  # 95% Confidence
+    z_score = 1.645  # Z-score for 95% confidence
+
+    VaR = predicted_vol[-1] * z_score  # Estimate worst-case loss
+
+    print(f"1-Day 95% VaR Estimate: {VaR:.2f}%")
+
+
 # TODO: Arima testing
-# TODO: Make Generalized Autoregressive Conditional Heteroskedasticity
