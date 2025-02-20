@@ -19,6 +19,7 @@ ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_lo
 ea.stress_test_mcs(ticker, stress_factor = 1.5, max_price_multiplier = 3, use_log_normal=False)
 ea.arima_model(ticker)
 ea.garch_model(ticker)
+ea.gbm_model(ticker)
 ea.indices_corr("pearson", ticker)
 ea.indices_corr("spearman", ticker)
 ea.indices_corr("kendall", ticker)
